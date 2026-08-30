@@ -5,15 +5,14 @@ const fs = require('fs');
 
 const app = express();
 
-// uploadsフォルダが無い場合は自動作成する
+// uploadsフォルダが無い場合は自動作成
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir);
 }
 
-// フロントエンドのファイルと、アップロードされた画像を配信
-app.use(express.static('public'));
-app.use('/uploads', express.static('uploads'));
+// アップロードされた画像をブラウザから見られるように設定
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // 画像の保存先設定
 const upload = multer({ dest: 'uploads/' });
@@ -21,21 +20,24 @@ const upload = multer({ dest: 'uploads/' });
 // 簡易データベース（メモリ保存）
 let faces = []; 
 
-// 画像アップロードと採点の処理
+// トップページ（直下の index.html を返す）
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// 画像アップロードと採点処理
 app.post('/upload', upload.single('faceImage'), (req, res) => {
     if (!req.file) return res.redirect('/');
     
-    // 【ここにAIの処理を組み込みます】
-    // 今回はベースアプリとして、0〜100のランダムな点数を付与
+    // 0〜100のランダムな点数（デモ用）
     const score = Math.floor(Math.random() * 101);
     
     faces.push({
         imageUrl: `/uploads/${req.file.filename}`,
         score: score,
-        id: Date.now() // 表示用の一意のID
+        id: Date.now()
     });
     
-    // アップロード後、元の画面に戻る
     res.redirect('/');
 });
 
