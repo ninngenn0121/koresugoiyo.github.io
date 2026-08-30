@@ -1,0 +1,1 @@
+# koresugoiyo.github.io
